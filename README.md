@@ -1,1 +1,1 @@
-# TrafficOptimization
+for simplicity, there is no right turn after stop

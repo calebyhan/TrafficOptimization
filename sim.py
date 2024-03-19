@@ -1,6 +1,8 @@
 import random
 import numpy as np
 
+DEBUG = True
+
 
 class Sim:
     """
@@ -11,14 +13,37 @@ class Sim:
 
     POSSIBLE_ACTIONS = ["0a", "0b", "1a", "1b", "2a", "2b", "2c", "2d"]
 
-    def __init__(self, t):
+    def __init__(self, time):
         self.roads = []
         self.action = None
-        self.t = t
+        self.time = time
+        self.t = 0
+        self.fill_roads()
 
     def fill_roads(self):
         for i in range(4):
             self.roads.append(Road(self.t))
+
+    def idle(self):
+        idle = 0
+        for road in self.roads:
+            for car in road.cars:
+                idle += car.idle
+        return idle
+
+    def run(self):
+        for i in range(self.time):
+            for road in self.roads:
+                road.run()
+
+            if DEBUG:
+                print("Road 1: ", self.roads[0])
+                print("Road 2: ", self.roads[1])
+                print("Road 3: ", self.roads[2])
+                print("Road 4: ", self.roads[3])
+
+            self.t += 1
+            return self.idle()
 
 
 class Road:
@@ -26,6 +51,7 @@ class Road:
         self.cars = []
         self.t = t
         self.x = self.create_events()
+        self.signal = False
 
     @staticmethod
     def create_events():
@@ -42,17 +68,26 @@ class Road:
         return noisy_sin_wave
 
     def run(self):
-        if random.random() < self.x[self.t]:
+        if random.random() < abs(self.x[self.t]):
             self.add_car()
 
         for car in self.cars:
-            car.move()
+            if car.move(self.signal) == -1:
+                self.cars.remove(car)
 
     def add_car(self):
         self.cars.append(Car())
 
+    def __str__(self):
+        return f"{self.cars}"
+
 
 class Car:
+    """
+        0: left
+        1: right
+        2: straight
+    """
     MAX_ACCELERATION = 1
     MAX_SPEED = 2
 
@@ -60,8 +95,27 @@ class Car:
         self.speed = 0
         self.acceleration = 0
         self.position = 0
-        self.idle = False
-        self.road = None
+        self.idle = 0
+        self.turn = random.choices([0, 1, 2], [0.1, 0.1, 0.8])[0]
 
-    def move(self):
-        pass
+    def move(self, signal):
+        if self.speed < self.MAX_SPEED:
+            self.acceleration = self.MAX_ACCELERATION
+        else:
+            self.acceleration = 0
+
+        self.speed += self.acceleration
+        self.position += self.speed
+
+        if self.position >= 50:
+            self.idle = 1
+            self.position = 50
+
+        if self.idle >= 1 and signal:
+            return -1
+
+        if self.idle >= 1:
+            self.idle += 1
+
+    def __str__(self):
+        return f"{self.position} {self.idle} {self.turn}"

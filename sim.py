@@ -34,6 +34,15 @@ class Sim:
     def sample(self):
         return random.choice(self.POSSIBLE_ACTIONS)
 
+    def unpack(self):
+        ret = []
+        for road in self.roads:
+            for car in road.cars:
+                ret.append([car.position, car.idle, car.turn, car.speed, car.acceleration])
+        if DEBUG:
+            print(ret)
+        return ret
+
     def step(self, light):
         self.action = light
         for road in self.roads:
@@ -46,13 +55,13 @@ class Sim:
             print("Road 4: ", self.roads[3])
 
         self.t += 1
-        return self.idle()
+        return self.unpack(), self.idle(), self.t == self.time
 
     def reset(self):
         self.t = 0
         self.roads = []
         self.fill_roads()
-        return self.idle()
+        return self.unpack()
 
 
 class Road:

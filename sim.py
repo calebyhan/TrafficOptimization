@@ -31,19 +31,28 @@ class Sim:
                 idle += car.idle
         return idle
 
-    def run(self):
-        for i in range(self.time):
-            for road in self.roads:
-                road.run()
+    def sample(self):
+        return random.choice(self.POSSIBLE_ACTIONS)
 
-            if DEBUG:
-                print("Road 1: ", self.roads[0])
-                print("Road 2: ", self.roads[1])
-                print("Road 3: ", self.roads[2])
-                print("Road 4: ", self.roads[3])
+    def step(self, light):
+        self.action = light
+        for road in self.roads:
+            road.run()
 
-            self.t += 1
-            return self.idle()
+        if DEBUG:
+            print("Road 1: ", self.roads[0])
+            print("Road 2: ", self.roads[1])
+            print("Road 3: ", self.roads[2])
+            print("Road 4: ", self.roads[3])
+
+        self.t += 1
+        return self.idle()
+
+    def reset(self):
+        self.t = 0
+        self.roads = []
+        self.fill_roads()
+        return self.idle()
 
 
 class Road:

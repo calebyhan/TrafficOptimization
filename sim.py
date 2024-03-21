@@ -37,8 +37,19 @@ class Sim:
     def unpack(self):
         ret = []
         for road in self.roads:
+            ret_road = []
             for car in road.cars:
-                ret.append([car.position, car.idle, car.turn, car.speed, car.acceleration])
+                ret_road.append([car.position, car.idle, car.turn, car.speed, car.acceleration])
+            ret.append(ret_road)
+
+        max_arrays = max(len(sub) for sub in ret)
+        padded_ret = ret + [[]] * (max_arrays - len(ret))
+
+        if DEBUG:
+            print(padded_ret)
+
+        ret = np.array(padded_ret)
+
         if DEBUG:
             print(ret)
         return ret
